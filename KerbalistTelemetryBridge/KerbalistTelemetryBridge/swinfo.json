@@ -3,9 +3,9 @@
   "mod_id": "com.blocdigital.kerbalist.telemetry",
   "author": "Bloc Digital",
   "name": "Kerbalist Telemetry Bridge",
-  "description": "Local HTTP/WebSocket telemetry bridge for Kerbalist and other browser applications.",
-  "source": "https://blocdigital.github.io/KerbalistTelemetryBridge/",
-  "version": "0.1.0",
+  "description": "Local HTTP/WebSocket telemetry bridge for Kerbalist browser applications.",
+  "source": "https://blocdigital.github.io/Kerbalist/",
+  "version": "1.0.0",
   "version_check": "",
   "main_assembly": "KerbalistTelemetryBridge.dll",
   "ksp2_version": {
