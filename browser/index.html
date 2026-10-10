@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Kerbalist Telemetry Test</title><style>body{font:14px system-ui;background:#111;color:#ddd;margin:20px}#status{margin-bottom:12px}pre{white-space:pre-wrap}</style></head>
+<body>
+<h2>Kerbalist Telemetry Bridge</h2>
+<div id="status">Detecting KSP2…</div>
+<pre id="out"></pre>
+<script src="kerbalist-telemetry-client.js"></script>
+<script>
+const status=document.getElementById('status'), out=document.getElementById('out');
+const client=new KerbalistTelemetryClient({
+  onStatus: info => status.textContent=({connecting:'Connecting to KSP2…',connected:'Connected to KSP2',disconnected:'KSP2 not detected — retrying automatically',error:'Telemetry connection error — retrying automatically'}[info.state]||info.state),
+  onState: state => out.textContent=JSON.stringify({
+    schema:state.schema, sequence:state.sequence, game:state.game,
+    vessel:state.vessel,
+    solarSystem:{staticRevision:state.solarSystem?.staticRevision,stateRevision:state.solarSystem?.stateRevision,bodyCount:state.solarSystem?.bodies?.length||0,stateCount:state.solarSystem?.states?.length||0}
+  },null,2)
+});
+client.connect();
+</script>
+</body></html>
