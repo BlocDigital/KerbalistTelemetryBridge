@@ -6,6 +6,14 @@ A local HTTP/WebSocket telemetry bridge for **Kerbal Space Program 2** (KSP2) Re
 
 ## Quick Start
 
+1. Unzip `KerbalistTelemetryBridge.zip` into the `Kerbal Space Program 2\mods` folder.
+2. Restart KSP2.
+3. The bridge will start automatically and will be available at `http://127.0.0.1:8765/`.
+   The server will log the port to the console, so you can check it there if needed.
+   The default port is 8765.
+
+Tested on
+
 - **Base URL:** `http://127.0.0.1:8765/`
 - **WebSocket stream:** `ws://127.0.0.1:8765/ws`
 
