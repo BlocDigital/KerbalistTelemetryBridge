@@ -1,7 +1,18 @@
-# Kerbalist Telemetry Bridge — KSP2 Redux
+# Kerbalist Telemetry Bridge — User Guide
 
-A local telemetry bridge for **KSP2 Redux / SpaceWarp2**. It exposes the running KSP2 simulation to the Kerbalist browser app without requiring kRPC2.
+A local HTTP/WebSocket telemetry bridge for **Kerbal Space Program 2** (KSP2) Redux / SpaceWarp2. It exposes the running KSP2 simulation to browser-based applications (like Kerbalist).
 
+---
+
+## Quick Start
+
+1. Unzip [KerbalistTelemetryBridge.zip](https://github.com/BlocDigital/KerbalistTelemetryBridge/releases/tag/v1.0) into the `Kerbal Space Program 2\mods` folder.
+2. Restart KSP2.
+3. The bridge will start automatically and will be available at `http://127.0.0.1:8765/`.
+   The server will log the port to the console, so you can check it there if needed.
+   The default port is 8765.
+
+   
 ## What it exposes
 
 ### Game
