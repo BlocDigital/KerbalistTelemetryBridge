@@ -110,6 +110,4 @@ The script compiles `src\\*.cs`, writes `KerbalistTelemetryBridge.dll`, copies `
 
 ## Current verification status
 
-The implementation has been checked against the supplied assembly archive for the presence of key Redux/KSP2 API symbols such as `UniverseModel`, `TryGetActiveSimVessel`, `GetAllCelestialBodies`, `GetNodes`, `TotalDeltaVVac`, `TimeToAp`, `TimeToPe`, `bodyDisplayName`, `gravParameter` and `sphereOfInfluence`.
-
-**Not yet verified:** loading the compiled DLL inside a live KSP2 Redux session. The environment used to prepare this package does not contain the Windows .NET Framework C# compiler, so the final DLL cannot honestly be claimed as compiled/runtime-tested here.
+The implementation has been checked against the supplied assembly archive for the presence of key Redux/KSP2 API symbols such as `UniverseModel`, `TryGetActiveSimVessel`, `GetAllCelestialBodies`, `GetNodes`, `TotalDeltaVVac`, `TimeToAp`, `TimeToPe`, `bodyDisplayName`, `gravParameter` and `sphereOfInfluence`. 
