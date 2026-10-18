@@ -166,7 +166,12 @@ namespace KerbalistTelemetry
 
             VesselComponent activeVessel;
             if (game.ViewController != null && game.ViewController.TryGetActiveSimVessel(out activeVessel))
+            {
                 snapshot.vessel = CaptureVessel(activeVessel);
+                // The vessel's own Orbit is null in this build, so fall back to the vessel-vehicle orbit.
+                if (snapshot.vessel != null && snapshot.vessel.orbit == null)
+                    snapshot.vessel.orbit = CaptureVesselVehicleOrbit(game);
+            }
 
             var bodies = universe.GetAllCelestialBodies();
             UpdateSolarSystem(bodies, universe.UniverseTime);
@@ -340,6 +345,54 @@ namespace KerbalistTelemetry
                 result.relativeSpeed = result.velocity.Magnitude();
 
             return result;
+        }
+
+        private static bool _orbitRouteLogged;
+
+        // Active vessel orbit read from game.ViewController.ActiveVesselVehicle.Orbit.
+        // Reads by member name, so it doesn't depend on the exact interfaces at compile time.
+        private OrbitTelemetry CaptureVesselVehicleOrbit(object game)
+        {
+            try
+            {
+                object controller = ReadObject(game, "ViewController");
+                object vehicle = ReadObject(controller, "ActiveVesselVehicle");
+                object orbit = ReadObject(vehicle, "Orbit");
+                if (orbit == null)
+                {
+                    if (!_orbitRouteLogged) UnityEngine.Debug.Log("[KerbalistTelemetry] active vessel orbit: not available from any route");
+                    _orbitRouteLogged = true;
+                    return null;
+                }
+
+                var t = new OrbitTelemetry();
+                t.apoapsis = ReadDouble(orbit, "Apoapsis");
+                t.periapsis = ReadDouble(orbit, "Periapsis");
+                t.semiMajorAxis = ReadDouble(orbit, "semiMajorAxis");
+                t.eccentricity = ReadDouble(orbit, "eccentricity");
+                t.inclination = ReadDouble(orbit, "inclination");
+                t.longitudeOfAscendingNode = ReadDouble(orbit, "longitudeOfAscendingNode");
+                t.argumentOfPeriapsis = ReadDouble(orbit, "argumentOfPeriapsis");
+                t.meanAnomaly = ReadDouble(orbit, "meanAnomalyAtEpoch");
+                t.period = ReadDouble(orbit, "period");
+                t.startUT = ReadDouble(orbit, "epoch");
+                t.referenceBody = ReadString(ReadObject(orbit, "referenceBody"), "bodyName", "Name", "name");
+                t.localPosition = ReadVector(ReadObject(orbit, "localPosition"));
+                t.relativeVelocity = ReadVector(ReadObject(orbit, "relativeVelocity"));
+
+                if (!_orbitRouteLogged)
+                {
+                    UnityEngine.Debug.Log("[KerbalistTelemetry] active vessel orbit: route 2 (ViewController.ActiveVesselVehicle.Orbit)");
+                    _orbitRouteLogged = true;
+                }
+                return t;
+            }
+            catch (Exception ex)
+            {
+                if (!_orbitRouteLogged) UnityEngine.Debug.LogError("[KerbalistTelemetry] vessel orbit route 2 failed: " + ex.Message);
+                _orbitRouteLogged = true;
+                return null;
+            }
         }
 
         private static Vector3d ReadVector(object source)

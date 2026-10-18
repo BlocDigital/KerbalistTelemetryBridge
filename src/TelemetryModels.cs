@@ -50,6 +50,16 @@ namespace KerbalistTelemetry
         public OrbitTelemetry orbit;
     }
 
+    public sealed class BodyTelemetry
+    {
+        public string id; public string name; public string displayName; public string parent;
+        public bool isStar; public bool hasAtmosphere; public bool hasOcean;
+        public double radius; public double mass; public double gravitationalParameter;
+        public double sphereOfInfluence; public double rotationPeriod;
+        public Vector3d position; public Vector3d velocity;
+        public OrbitTelemetry orbit;
+    }
+
     public sealed class ResourceTelemetry
     { public string name; public double amount; public double maxAmount; public double fraction; }
 
@@ -63,6 +73,7 @@ namespace KerbalistTelemetry
         public double meanAnomaly; public double meanMotion; public double period;
         public double timeToApoapsis; public double timeToPeriapsis; public double startUT; public double endUT;
         public string referenceBody;
+        public Vector3d localPosition; public Vector3d relativeVelocity;
     }
 
     public sealed class ManeuverTelemetry

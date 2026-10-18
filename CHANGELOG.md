@@ -2,6 +2,23 @@
 
 All notable changes to the Kerbalist Telemetry Bridge are listed here.
 
+## [1.3.1] - 2026-10-18
+
+### Security
+- The HTTP responses no longer allow every origin. Only the Kerbalist pages can read the data: `null` (a page opened from disk), `https://blocdigital.github.io`, and localhost on any port.
+- Requests from other origins get `403 Forbidden`, for both HTTP and WebSocket.
+- Requests whose `Host` header isn't this machine get `403 Forbidden`, which blocks DNS-rebinding attacks.
+- At most 8 clients can be connected at once.
+
+## [1.3.0] - 2026-10-18
+
+### Added
+- The active vessel's orbit is read from `game.ViewController.ActiveVesselVehicle.Orbit`, used when the vessel's own `Orbit` is null. It provides `apoapsis`, `periapsis`, the orbital elements, `referenceBody`, and the state vectors `localPosition` and `relativeVelocity`.
+- The log says which route supplied the orbit: `route 2 (ViewController.ActiveVesselVehicle.Orbit)`, or that no route worked.
+
+### Known Issues
+- The active vessel's position is still not sent in the vessel block. Use `vessel.orbit.localPosition` for now.
+
 ## [1.2.0] - 2026-10-18
 
 ### Changed

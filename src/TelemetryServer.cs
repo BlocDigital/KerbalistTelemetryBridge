@@ -17,6 +17,12 @@ namespace KerbalistTelemetry
         private Thread _acceptThread;
         private volatile bool _running;
 
+        // Only the Kerbalist pages may read the data. "null" is the origin of a page opened from disk.
+        private const string KerbalistOrigin = "https://blocdigital.github.io";
+        private const int MaxClients = 8;
+        private static int _activeClients;
+        [ThreadStatic] private static string _corsOrigin;
+
         public TelemetryServer(int port, Func<string> snapshot)
         {
             _port = port;
@@ -49,7 +55,17 @@ namespace KerbalistTelemetry
                 try
                 {
                     TcpClient client = _listener.AcceptTcpClient();
-                    ThreadPool.QueueUserWorkItem(_ => HandleClient(client));
+                    if (Interlocked.Increment(ref _activeClients) > MaxClients)
+                    {
+                        Interlocked.Decrement(ref _activeClients);
+                        client.Close();
+                        continue;
+                    }
+                    ThreadPool.QueueUserWorkItem(_ =>
+                    {
+                        try { HandleClient(client); }
+                        finally { Interlocked.Decrement(ref _activeClients); }
+                    });
                 }
                 catch
                 {
@@ -78,6 +94,32 @@ namespace KerbalistTelemetry
                 string path = requestLine.Length > 1 ? requestLine[1] : "/";
 
                 var headers = ParseHeaders(lines);
+
+                // Reject requests whose Host is not this machine (blocks DNS rebinding).
+                string host;
+                if (headers.TryGetValue("Host", out host) && !IsAllowedHost(host))
+                {
+                    _corsOrigin = null;
+                    WriteHttp(stream, 403, "{\"error\":\"forbidden host\"}", "application/json; charset=utf-8");
+                    return;
+                }
+
+                // Reject pages from other origins. Requests with no Origin (tools, direct visits) are allowed.
+                string origin;
+                if (headers.TryGetValue("Origin", out origin))
+                {
+                    if (!IsAllowedOrigin(origin))
+                    {
+                        _corsOrigin = null;
+                        WriteHttp(stream, 403, "{\"error\":\"forbidden origin\"}", "application/json; charset=utf-8");
+                        return;
+                    }
+                    _corsOrigin = origin;
+                }
+                else
+                {
+                    _corsOrigin = null;
+                }
                 string wsKey;
                 if (string.Equals(path, "/ws", StringComparison.OrdinalIgnoreCase) &&
                     headers.TryGetValue("Sec-WebSocket-Key", out wsKey))
@@ -161,6 +203,27 @@ namespace KerbalistTelemetry
             }
         }
 
+        private bool IsAllowedHost(string host)
+        {
+            string h = host.Trim().ToLowerInvariant();
+            return h == "127.0.0.1:" + _port || h == "localhost:" + _port || h == "127.0.0.1" || h == "localhost";
+        }
+
+        private static bool IsAllowedOrigin(string origin)
+        {
+            string o = origin.Trim();
+            if (o == "null" || o == KerbalistOrigin)
+                return true;
+            // Local development pages on any port.
+            foreach (string prefix in new[] { "http://localhost", "http://127.0.0.1" })
+            {
+                if (o.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) &&
+                    (o.Length == prefix.Length || o[prefix.Length] == ':'))
+                    return true;
+            }
+            return false;
+        }
+
         private static string ReadHeaders(NetworkStream stream)
         {
             var buffer = new byte[8192];
@@ -200,7 +263,7 @@ namespace KerbalistTelemetry
                 "HTTP/1.1 " + status + " " + StatusText(status) + "\r\n" +
                 "Content-Type: " + contentType + "\r\n" +
                 "Content-Length: " + bytes.Length + "\r\n" +
-                "Access-Control-Allow-Origin: *\r\n" +
+                (_corsOrigin != null ? "Access-Control-Allow-Origin: " + _corsOrigin + "\r\nVary: Origin\r\n" : "") +
                 "Access-Control-Allow-Methods: GET, OPTIONS\r\n" +
                 "Access-Control-Allow-Headers: Content-Type\r\n" +
                 "Connection: close\r\n\r\n";
