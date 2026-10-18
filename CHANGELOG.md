@@ -2,6 +2,11 @@
 
 All notable changes to the Kerbalist Telemetry Bridge are listed here.
 
+## [1.3.2] - 2026-10-18
+
+### Fixed
+- The active vessel's apoapsis and periapsis are now altitudes above the surface, matching the game's HUD. The game reports them from the body's centre, so the body's radius is subtracted.
+
 ## [1.3.1] - 2026-10-18
 
 ### Security

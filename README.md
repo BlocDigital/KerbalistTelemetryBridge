@@ -1,6 +1,6 @@
 # Kerbalist Telemetry Bridge — User Guide
 
-**Version 1.3.1** · [Changelog](CHANGELOG.md)
+**Version 1.3.2** · [Changelog](CHANGELOG.md)
 
 A local HTTP/WebSocket telemetry bridge for **Kerbal Space Program 2** (KSP2) Redux / SpaceWarp2. It exposes the running KSP2 simulation to browser-based applications (like Kerbalist).
 
@@ -8,11 +8,7 @@ A local HTTP/WebSocket telemetry bridge for **Kerbal Space Program 2** (KSP2) Re
 
 ## Requirements
 
-<<<<<<< Updated upstream
-- KSP2 with **KSP2 Redux v0.2.9.0.106120** (snapshot 26w42c). The bridge is built and tested against this version.
-=======
 - KSP2 with **KSP2 Redux 0.2.9.0.105810** (snapshot 26w42a). The bridge is built and tested against this version.
->>>>>>> Stashed changes
 - Windows, since the build script and the install steps use Windows paths.
 
 ## Quick Start
