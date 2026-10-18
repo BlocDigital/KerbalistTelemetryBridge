@@ -6,7 +6,6 @@ using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-using ReduxLib.Logging;
 
 namespace KerbalistTelemetry
 {
@@ -14,16 +13,14 @@ namespace KerbalistTelemetry
     {
         private readonly int _port;
         private readonly Func<string> _snapshot;
-        private readonly ILogger _logger;
         private TcpListener _listener;
         private Thread _acceptThread;
         private volatile bool _running;
 
-        public TelemetryServer(int port, Func<string> snapshot, ILogger logger)
+        public TelemetryServer(int port, Func<string> snapshot)
         {
             _port = port;
             _snapshot = snapshot;
-            _logger = logger;
         }
 
         public void Start()

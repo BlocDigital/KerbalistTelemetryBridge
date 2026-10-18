@@ -29,12 +29,90 @@ namespace KerbalistTelemetry
         private double _bodyStateTimer;
         private SolarSystemTelemetry _solarSystem = new SolarSystemTelemetry();
 
+        // Unity calls this at startup for every loaded assembly, so the bridge starts even when the
+        // mod loader doesn't call OnInitialized. It creates the component that runs Update.
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        private static void Bootstrap()
+        {
+            WriteStartupStatus("bootstrap: Unity assembly hook ran");
+            try
+            {
+                if (Instance == null)
+                {
+                    var go = new GameObject("KerbalistTelemetryBridge");
+                    UnityEngine.Object.DontDestroyOnLoad(go);
+                    go.AddComponent<TelemetryBridgeMod>();
+                }
+            }
+            catch (Exception ex)
+            {
+                WriteStartupStatus("FAILED at 'bootstrap component': " + ex);
+            }
+        }
+
         public override void OnInitialized()
         {
+            WriteStartupStatus("OnInitialized called");
+            StartServer();
+        }
+
+        private void Awake()
+        {
             Instance = this;
-            _server = new TelemetryServer(8765, GetJsonSnapshot, SWLogger);
-            _server.Start();
-            SWLogger.LogInfo("[KerbalistTelemetry] Local telemetry server started on 127.0.0.1:8765");
+            StartServer();
+        }
+
+        // Starts the HTTP/WebSocket server once. Safe to call from both startup paths.
+        private void StartServer()
+        {
+            if (_server != null)
+                return;
+            string stage = "begin";
+            try
+            {
+                stage = "create server";
+                _server = new TelemetryServer(8765, GetJsonSnapshot);
+                stage = "start listener";
+                _server.Start();
+                stage = "started";
+                UnityEngine.Debug.Log("[KerbalistTelemetry] Local telemetry server started on 127.0.0.1:8765");
+                WriteStartupStatus("OK: listening on 127.0.0.1:8765");
+            }
+            catch (Exception ex)
+            {
+                _server = null;
+                UnityEngine.Debug.LogError("[KerbalistTelemetry] startup failed at '" + stage + "': " + ex);
+                WriteStartupStatus("FAILED at '" + stage + "': " + ex);
+            }
+        }
+
+        // Writes startup progress to bridge-startup.txt. The DLL may be loaded from memory, in which case
+        // Assembly.Location is empty, so try several folders and always echo to the game log.
+        private static void WriteStartupStatus(string text)
+        {
+            string line = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "  " + text;
+            UnityEngine.Debug.Log("[KerbalistTelemetry] status: " + text);
+            string[] folders =
+            {
+                SafeDir(() => System.IO.Path.GetDirectoryName(typeof(TelemetryBridgeMod).Assembly.Location)),
+                SafeDir(() => System.IO.Path.Combine(UnityEngine.Application.dataPath, "..", "mods", "KerbalistTelemetryBridge")),
+                SafeDir(() => UnityEngine.Application.persistentDataPath)
+            };
+            foreach (string dir in folders)
+            {
+                if (string.IsNullOrEmpty(dir)) continue;
+                try
+                {
+                    System.IO.File.AppendAllText(System.IO.Path.Combine(dir, "bridge-startup.txt"), line + Environment.NewLine);
+                    return;
+                }
+                catch { }
+            }
+        }
+
+        private static string SafeDir(Func<string> f)
+        {
+            try { return f(); } catch { return null; }
         }
 
         private void Update()
@@ -51,7 +129,7 @@ namespace KerbalistTelemetry
             }
             catch (Exception ex)
             {
-                SWLogger.LogError("[KerbalistTelemetry] Snapshot error: " + ex);
+                UnityEngine.Debug.LogError("[KerbalistTelemetry] Snapshot error: " + ex);
             }
         }
 
@@ -387,30 +465,6 @@ namespace KerbalistTelemetry
         {
             object v = ReadObject(source, names);
             return v == null ? null : v.ToString();
-        }
-
-        private BodyTelemetry CaptureBody(CelestialBodyComponent body, double ut)
-        {
-            var result = new BodyTelemetry();
-            result.id = body.Guid.ToString();
-            result.name = body.bodyName;
-            result.displayName = body.bodyDisplayName;
-            result.parent = body.referenceBody != null ? body.referenceBody.bodyName : null;
-            result.isStar = body.IsStar;
-            result.hasAtmosphere = body.hasAtmosphere;
-            result.hasOcean = body.hasOcean;
-            result.radius = body.radius;
-            result.mass = body.Mass;
-            result.gravitationalParameter = body.gravParameter;
-            result.sphereOfInfluence = body.sphereOfInfluence;
-            result.rotationPeriod = body.rotationPeriod;
-            result.position = ToVector(body.Position.localPosition);
-            result.velocity = ToVector(body.Velocity.relativeVelocity.vector);
-
-            if (body.Orbit != null)
-                result.orbit = CaptureOrbit(body.Orbit);
-
-            return result;
         }
 
         private OrbitTelemetry CaptureOrbit(IPatchedOrbit orbitInterface)

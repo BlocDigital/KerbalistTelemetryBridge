@@ -18,7 +18,7 @@ if (!(Test-Path $csc)) { throw "Microsoft .NET Framework csc.exe not found." }
 
 $refs = @(
     "mscorlib.dll", "System.dll", "System.Core.dll", "System.Net.Http.dll", "netstandard.dll",
-    "UnityEngine.dll", "UnityEngine.CoreModule.dll", "Unity.Entities.dll", "KSPLogging.dll", "ReduxLib.dll", "SpaceWarp2.dll",
+    "UnityEngine.dll", "UnityEngine.CoreModule.dll", "UnityEngine.ScriptingModule.dll", "Unity.Entities.dll", "Ksp2Redux.dll",
     "Assembly-CSharp.dll", "Newtonsoft.Json.dll"
 ) | ForEach-Object {
     $p = Join-Path $managed $_
