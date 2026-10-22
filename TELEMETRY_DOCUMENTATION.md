@@ -1,6 +1,6 @@
 # Kerbalist Telemetry Bridge — User Guide
 
-A local HTTP/WebSocket telemetry bridge for **Kerbal Space Program 2** (KSP2) Redux / SpaceWarp2. It exposes the running KSP2 simulation to browser-based applications (like Kerbalist) without requiring kRPC2.
+A local HTTP/WebSocket telemetry bridge for **Kerbal Space Program 2** (KSP2) Redux / SpaceWarp2. It exposes the running KSP2 simulation to browser-based applications (like Kerbalist).
 
 ---
 

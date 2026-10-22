@@ -366,8 +366,10 @@ namespace KerbalistTelemetry
                 }
 
                 var t = new OrbitTelemetry();
-                t.apoapsis = ReadDouble(orbit, "Apoapsis");
-                t.periapsis = ReadDouble(orbit, "Periapsis");
+                // The game reports apsides from the body's centre. The HUD shows altitude, so subtract the radius.
+                double bodyRadius = ReadDouble(ReadObject(orbit, "referenceBody"), "radius");
+                t.apoapsis = ReadDouble(orbit, "Apoapsis") - bodyRadius;
+                t.periapsis = ReadDouble(orbit, "Periapsis") - bodyRadius;
                 t.semiMajorAxis = ReadDouble(orbit, "semiMajorAxis");
                 t.eccentricity = ReadDouble(orbit, "eccentricity");
                 t.inclination = ReadDouble(orbit, "inclination");
